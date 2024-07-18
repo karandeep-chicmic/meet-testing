@@ -1,6 +1,7 @@
-import { AfterViewInit, OnInit } from '@angular/core';
+import { AfterViewInit, OnInit, inject } from '@angular/core';
 import { Component, ElementRef, ViewChild } from '@angular/core';
 import { PeerService } from '../../../service/peer.service';
+import { PEER_JS_EVENTS } from '../../../../constants';
 
 @Component({
   selector: 'app-screen-share',
@@ -10,66 +11,43 @@ import { PeerService } from '../../../service/peer.service';
   styleUrl: './screen-share.component.css',
 })
 export class ScreenShareComponent implements OnInit {
-  // @ViewChild('screenVideo') screenVideo: ElementRef;
+  localStream: MediaStream;
+  peerService: PeerService = inject(PeerService);
 
-  // constructor() {}
+  ngOnInit() {
+    const video = document.getElementById(
+      'remote-video'
+    ) as HTMLVideoElement;
+    
+    this.peerService.callEvent(video);
+  }
 
-  // ngAfterViewInit() {
-  //   this.startScreenShare();
-  // }
+  startScreenShare(peerId: string) {
+    navigator.mediaDevices.getDisplayMedia({ video: true }).then((stream) => {
+      this.localStream = stream;
+      const videoElement = document.querySelector(
+        'video#local-video'
+      ) as HTMLVideoElement;
+      videoElement.srcObject = stream;
+      videoElement.play();
 
-  // async startScreenShare() {
-  //   try {
-  //     // Request screen capture
-  //     const stream = await navigator.mediaDevices.getDisplayMedia({
-  //       video: true,
-  //     });
-
-  //     // Set the video element to the stream
-  //     this.screenVideo.nativeElement.srcObject = stream;
-  //     this.screenVideo.nativeElement.play();
-  //   } catch (err) {
-  //     console.error('Error: ' + err);
-  //   }
-  // }
-
-  @ViewChild('localVideo') localVideo: ElementRef<HTMLVideoElement>;
-  @ViewChild('remoteVideo') remoteVideo: ElementRef<HTMLVideoElement>;
-
-  constructor(private peerService: PeerService) {}
-
-  ngOnInit(): void {
-    this.peerService.onCall((call) => {
-      navigator.mediaDevices
-        .getDisplayMedia({ video: true, audio: true })
-        .then((stream) => {
-          call.answer(stream);
-          call.on('stream', (remoteStream) => {
-            this.remoteVideo.nativeElement.srcObject = remoteStream;
-          });
-        })
-        .catch((err) => console.error('Failed to get display media', err));
+      this.peerService.call(peerId, stream);
     });
   }
 
-  startScreenShare(): void {
+  startVideoShare(peerId: string) {
     navigator.mediaDevices
-      .getDisplayMedia({ video: true, audio: true })
+      .getUserMedia({ video: true, audio: true })
       .then((stream) => {
-        this.localVideo.nativeElement.srcObject = stream;
-        const peerId = localStorage.getItem('peerId');
+        console.log(stream);
+        const videoElement = document.querySelector(
+          'video#local-video'
+        ) as HTMLVideoElement;
+        videoElement.srcObject = stream;
+        videoElement.play();
 
-        if (peerId) {
-          this.peerService.callPeer(peerId, stream); // Replace 'remote-peer-id' with actual peer ID
-        }
-      })
-      .catch((err) => console.error('Failed to get display media', err));
+        this.peerService.call(peerId, stream);
+      });
   }
-
-  connectToPeer(): void {
-    const conn = this.peerService.connectToPeer('remote-peer-id'); // Replace 'remote-peer-id' with actual peer ID
-    conn.on('open', () => {
-      console.log('Connected to peer');
-    });
-  }
+ 
 }

@@ -1,11 +1,13 @@
-<!-- <div>
-  <video #screenVideo controls></video>
-</div> -->
-
-
 <div>
-  <button (click)="startScreenShare()">Start Screen Share</button>
-  <button (click)="connectToPeer()">Connect to Peer</button>
-  <video #localVideo autoplay></video>
-  <video #remoteVideo autoplay></video>
+  <input type="text" placeholder="Enter peer ID to call" #peerIdInput />
+  <button (click)="startScreenShare(peerIdInput.value)">
+    Start Screen Share
+  </button>
+  <button (click)="startVideoShare(peerIdInput.value)">
+    Start Video Share
+  </button>
+
+ 
 </div>
+<video id="local-video" autoplay muted></video>
+<video id="remote-video" autoplay></video>

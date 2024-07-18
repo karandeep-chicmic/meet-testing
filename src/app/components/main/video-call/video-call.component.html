@@ -1,0 +1,4 @@
+<input type="text" placeholder="Enter peer ID to call" #peerIdInput />
+<button (click)="startVideoCall(peerIdInput.value)">Start Video Call</button>
+<video id="local-video" autoplay muted></video>
+<video id="remote-video" autoplay></video>
